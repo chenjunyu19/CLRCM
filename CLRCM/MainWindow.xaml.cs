@@ -1,7 +1,9 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
+
 namespace CLRCM
 {
     /// <summary>
@@ -9,17 +11,15 @@ namespace CLRCM
     /// </summary>
     public partial class MainWindow : Window
     {
-        DispatcherTimer timeTimer;
-        DispatcherTimer lrcTimer;
+        DispatcherTimer timeTimer = new DispatcherTimer();
+        DispatcherTimer lrcTimer = new DispatcherTimer();
 
         public MainWindow()
         {
-            InitializeComponent();
-            timeTimer = new DispatcherTimer();
-            timeTimer.Interval = TimeSpan.FromTicks(1);
+            InitializeComponent();;
+            timeTimer.Interval = TimeSpan.FromMilliseconds(1);
             timeTimer.Tick += new EventHandler(timeTimer_Tick);
             timeTimer.Start();
-            lrcTimer = new DispatcherTimer();
             lrcTimer.Interval = TimeSpan.FromMilliseconds(10);
             lrcTimer.Tick += new EventHandler(lrcTimer_Tick);
 
@@ -59,14 +59,18 @@ namespace CLRCM
 
         private void lrcTimer_Tick(object sender, EventArgs e)
         {
-            string[] lines = System.Text.RegularExpressions.Regex.Split(textBox.Text, Environment.NewLine);
-            foreach (var line in lines)
+            MatchCollection mc = new Regex(@"\[([0-9.:]*)\]+(.*)", RegexOptions.Compiled).Matches(textBox.Text);
+            int istart = 0;
+            int iend = 0;
+            foreach (Match m in mc)
             {
-                if (line.IndexOf("[" + label.Content + "]") == 0)
+                if (TimeSpan.Parse("00:" + m.Groups[1].Value) <= mediaElement.Position)
                 {
-                    textBox.Select(textBox.Text.IndexOf(line), line.Length);
+                    istart = textBox.Text.IndexOf(m.Value);
+                    iend = m.Value.Length;
                 }
             }
+            textBox.Select(istart, iend);
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
@@ -114,7 +118,6 @@ namespace CLRCM
 
         private void checkBox1_Checked(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("由于程序设计缺陷，在性能较低的机器上运行会出现部分歌词没有扫描的BUG。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             lrcTimer.Start();
         }
 
