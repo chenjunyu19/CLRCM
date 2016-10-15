@@ -128,14 +128,12 @@ namespace CLRCM
 
         private void button5_Click(object sender, RoutedEventArgs e)
         {
-            mediaElement.Pause();
             int line = textBox.GetLineIndexFromCharacterIndex(textBox.CaretIndex);
             textBox.Text = textBox.Text.Insert(textBox.GetCharacterIndexFromLineIndex(line), "[" + label.Content + "]");
             if (textBox.GetLineIndexFromCharacterIndex(textBox.Text.Length - 1) > line)
             {
                 textBox.CaretIndex = textBox.GetCharacterIndexFromLineIndex(line + 1);
             }
-            mediaElement.Play();
         }
 
         private void mediaElement_MediaOpened(object sender, RoutedEventArgs e)
